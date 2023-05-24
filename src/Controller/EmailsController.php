@@ -16,7 +16,7 @@ use Teapot\StatusCode\Http;
  */
 class EmailsController extends BaseApiController
 {
-    public function verifications(Request $request, PDO $db)
+    public function verifications(Request $request, PDO $db): void
     {
         $user_mapper = new UserMapper($db, $request);
         $email       = filter_var($request->getParameter("email"), FILTER_VALIDATE_EMAIL);
@@ -44,7 +44,7 @@ class EmailsController extends BaseApiController
         $view->setResponseCode(Http::ACCEPTED);
     }
 
-    public function usernameReminder(Request $request, PDO $db)
+    public function usernameReminder(Request $request, PDO $db): void
     {
         $user_mapper = new UserMapper($db, $request);
         $email       = filter_var($request->getParameter("email"), FILTER_VALIDATE_EMAIL);
@@ -70,7 +70,7 @@ class EmailsController extends BaseApiController
         $view->setResponseCode(Http::ACCEPTED);
     }
 
-    public function passwordReset(Request $request, PDO $db)
+    public function passwordReset(Request $request, PDO $db): void
     {
         $user_mapper = new UserMapper($db, $request);
         $username    = htmlspecialchars($request->getParameter("username"));

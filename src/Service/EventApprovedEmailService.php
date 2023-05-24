@@ -18,7 +18,7 @@ class EventApprovedEmailService extends BaseEmailService
         $this->website_url = $config['website_url'];
     }
 
-    public function sendEmail()
+    public function sendEmail(): void
     {
         $this->setSubject('Event approved');
 
