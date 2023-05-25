@@ -6,8 +6,8 @@ use DateTime;
 
 class EventApprovedEmailService extends BaseEmailService
 {
-    protected $event;
-    protected $website_url;
+    protected array $event;
+    protected string $website_url;
 
     public function __construct(array $config, array $recipients, array $event)
     {
