@@ -35,12 +35,16 @@ class EmailsController extends BaseApiController
         // Generate a verification token and email it to the user
         $token = $user_mapper->generateEmailVerificationTokenForUserId($user_id);
 
+        if (false === $token) {
+            throw new Exception("Error while generating verification token", Http::INTERNAL_SERVER_ERROR);
+        }
+
         $recipients   = [$email];
         $emailService = new UserRegistrationEmailService($this->config, $recipients, $token);
         $emailService->sendEmail();
 
         $view = $request->getView();
-        $view->setHeader('Content-Length', 0);
+        $view->setHeader('Content-Length', '0');
         $view->setResponseCode(Http::ACCEPTED);
     }
 
@@ -55,7 +59,7 @@ class EmailsController extends BaseApiController
 
         $list = $user_mapper->getUserByEmail($email);
 
-        if (!is_array($list['users']) || !count($list['users'])) {
+        if (!is_array($list) || !count($list['users'])) {
             throw new Exception("Can't find that email address", Http::BAD_REQUEST);
         }
 
@@ -66,7 +70,7 @@ class EmailsController extends BaseApiController
         $emailService->sendEmail();
 
         $view = $request->getView();
-        $view->setHeader('Content-Length', 0);
+        $view->setHeader('Content-Length', '0');
         $view->setResponseCode(Http::ACCEPTED);
     }
 
@@ -81,7 +85,7 @@ class EmailsController extends BaseApiController
 
         $list = $user_mapper->getUserByUsername($username);
 
-        if (!is_array($list['users']) || !count($list['users'])) {
+        if (!is_array($list) || !count($list['users'])) {
             throw new Exception("Can't find that user", Http::BAD_REQUEST);
         }
 
@@ -89,6 +93,10 @@ class EmailsController extends BaseApiController
 
         // neither user_id nor email are in the user resource returned by the mapper
         $user_id    = $user_mapper->getUserIdFromUsername($username);
+
+        if (!$user_id) {
+            throw new Exception("Unable retrieve user id", Http::BAD_REQUEST);
+        }
         $email      = $user_mapper->getEmailByUserId($user_id);
         $recipients = [$email];
 
@@ -103,7 +111,7 @@ class EmailsController extends BaseApiController
         $emailService->sendEmail();
 
         $view = $request->getView();
-        $view->setHeader('Content-Length', 0);
+        $view->setHeader('Content-Length', '0');
         $view->setResponseCode(Http::ACCEPTED);
     }
 }

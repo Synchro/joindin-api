@@ -26,7 +26,7 @@ class UsersController extends BaseApiController
      */
     private $talkCommentMapper;
 
-    public function getAction(Request $request, PDO $db)
+    public function getAction(Request $request, PDO $db): array|bool
     {
         $userId = $this->getItemId($request);
 
@@ -105,7 +105,7 @@ class UsersController extends BaseApiController
         return $mapper->getUserList($resultsperpage, $start, $verbose);
     }
 
-    public function postAction(Request $request, PDO $db)
+    public function postAction(Request $request, PDO $db): void
     {
         // check element 3, there's no user associated with the not-logged-in collections
         if (isset($request->url_elements[3])) {
@@ -122,7 +122,7 @@ class UsersController extends BaseApiController
 
                     if ($success) {
                         $view = $request->getView();
-                        $view->setHeader('Content-Length', 0);
+                        $view->setHeader('Content-Length', '0');
                         $view->setResponseCode(Http::NO_CONTENT);
 
                         return;
@@ -390,11 +390,11 @@ class UsersController extends BaseApiController
 
         // we're good!
         $view = $request->getView();
-        $view->setHeader('Content-Length', 0);
+        $view->setHeader('Content-Length', '0');
         $view->setResponseCode(Http::NO_CONTENT);
     }
 
-    public function passwordReset(Request $request, PDO $db)
+    public function passwordReset(Request $request, PDO $db): void
     {
         $token = htmlspecialchars($request->getParameter("token"));
 
@@ -424,7 +424,7 @@ class UsersController extends BaseApiController
         }
 
         $view = $request->getView();
-        $view->setHeader('Content-Length', 0);
+        $view->setHeader('Content-Length', '0');
         $view->setResponseCode(Http::NO_CONTENT);
     }
 
@@ -449,11 +449,11 @@ class UsersController extends BaseApiController
         $this->talkCommentMapper->deleteCommentsForUser($this->getItemId($request));
 
         $view = $request->getView();
-        $view->setHeader('Content-Length', 0);
+        $view->setHeader('Content-Length', '0');
         $view->setResponseCode(Http::NO_CONTENT);
     }
 
-    public function deleteUser(Request $request, PDO $db)
+    public function deleteUser(Request $request, PDO $db): void
     {
         if (!isset($request->user_id)) {
             throw new Exception("You must be logged in to delete data", Http::UNAUTHORIZED);
@@ -472,7 +472,7 @@ class UsersController extends BaseApiController
         }
 
         $view = $request->getView();
-        $view->setHeader('Content-Length', 0);
+        $view->setHeader('Content-Length', '0');
         $view->setResponseCode(Http::NO_CONTENT);
     }
 
@@ -484,7 +484,7 @@ class UsersController extends BaseApiController
      *
      * @throws Exception
      */
-    public function setTrusted(Request $request, PDO $db)
+    public function setTrusted(Request $request, PDO $db): void
     {
         if (null === ($request->getUserId())) {
             throw new Exception("You must be logged in to change a user account", Http::UNAUTHORIZED);
@@ -506,16 +506,16 @@ class UsersController extends BaseApiController
             throw new Exception("Unable to update status", Http::INTERNAL_SERVER_ERROR);
         }
         $view = $request->getView();
-        $view->setHeader('Content-Length', 0);
+        $view->setHeader('Content-Length', '0');
         $view->setResponseCode(Http::NO_CONTENT);
     }
 
-    public function setUserMapper(UserMapper $userMapper)
+    public function setUserMapper(UserMapper $userMapper): void
     {
         $this->userMapper = $userMapper;
     }
 
-    public function getUserMapper(PDO $db, Request $request)
+    public function getUserMapper(PDO $db, Request $request): UserMapper
     {
         if (!$this->userMapper) {
             $this->userMapper = new UserMapper($db, $request);
@@ -536,12 +536,12 @@ class UsersController extends BaseApiController
         }
     }
 
-    public function setUserRegistrationEmailService(UserRegistrationEmailService $mailService)
+    public function setUserRegistrationEmailService(UserRegistrationEmailService $mailService): void
     {
         $this->userRegistrationEmailService = $mailService;
     }
 
-    public function getUserRegistrationEmailService($config, $recipient, $token)
+    public function getUserRegistrationEmailService($config, $recipient, $token): UserRegistrationEmailService
     {
         if (!$this->userRegistrationEmailService) {
             $this->userRegistrationEmailService = new UserRegistrationEmailService(
