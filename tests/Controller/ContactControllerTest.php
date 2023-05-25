@@ -29,7 +29,7 @@ final class ContactControllerTest extends TestCase
      * @throws Exception
      */
     public function testContactWorksAsExpected(
-        bool$isClientPermittedPasswordGrant,
+        bool $isClientPermittedPasswordGrant,
         array $returnValueMap = [],
         $isCommentAcceptable = false,
         $expectedException = null,
