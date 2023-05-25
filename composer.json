@@ -24,7 +24,7 @@
     "michelf/php-markdown": "^2",
     "pimple/pimple": "^3.5",
     "psr/container": "^2.0.2",
-    "swiftmailer/swiftmailer": "^6.3",
+    "symfony/mailer": "^6.2",
     "teapot/status-code": "^2.1"
   },
   "require-dev": {

@@ -4,9 +4,9 @@ namespace Joindin\Api\Service;
 
 use Exception;
 use Michelf\Markdown;
-use Swift_Mailer;
-use Swift_Message;
-use Swift_SmtpTransport;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mailer\Transport;
 
 /**
  * Base Email Class
@@ -18,14 +18,14 @@ use Swift_SmtpTransport;
 abstract class BaseEmailService
 {
     /**
-     * The SwiftMailer object
+     * The SymfonyMailer instance
      */
-    protected Swift_Mailer $mailer;
+    protected Mailer $mailer;
 
     /**
-     * The SwiftMessage object
+     * The SymfonyEmail instance
      */
-    protected Swift_Message $message;
+    protected Email $message;
 
     protected array $recipients;
 
@@ -48,18 +48,14 @@ abstract class BaseEmailService
             throw new Exception("SMTP Server not properly set up.");
         }
 
-        $transport = new Swift_SmtpTransport(
-            $config['email']['smtp']['host'],
-            $config['email']['smtp']['port'],
-            $config['email']['smtp']['security']
-        );
+        if (!empty($config['email']['smtp']['username']) && !empty($config['email']['smtp']['password'])) {
+            $dsn = "smtp://{$config['email']['smtp']['username']}:{$config['email']['smtp']['password']}@{$config['email']['smtp']['host']}:{$config['email']['smtp']['port']}";
+        } else {
+            $dsn = "smtp://{$config['email']['smtp']['host']}:{$config['email']['smtp']['port']}";
+        }
 
-        $transport
-            ->setUsername($config['email']['smtp']['username'])
-            ->setPassword($config['email']['smtp']['password']);
-
-        $this->mailer  = new Swift_Mailer($transport);
-        $this->message = new Swift_Message();
+        $this->mailer  = new Mailer(Transport::fromDsn($dsn));
+        $this->message = new Email();
 
         if (
             isset($config['email']['forward_all_to'])
@@ -70,7 +66,7 @@ abstract class BaseEmailService
             $this->recipients = $recipients;
         }
 
-        $this->message->setFrom($config['email']['from']);
+        $this->message->from($config['email']['from']);
     }
 
     /**
@@ -105,7 +101,7 @@ abstract class BaseEmailService
      */
     protected function setBody(string $body): static
     {
-        $this->message->setBody($body);
+        $this->message->text($body);
 
         return $this;
     }
@@ -121,7 +117,7 @@ abstract class BaseEmailService
      */
     protected function setHtmlBody(string $body): static
     {
-        $this->message->addPart($body, 'text/html');
+        $this->message->html($body);
 
         return $this;
     }
@@ -132,7 +128,7 @@ abstract class BaseEmailService
     protected function dispatchEmail(): void
     {
         foreach ($this->recipients as $to) {
-            $this->message->setTo($to);
+            $this->message->to($to);
             $this->mailer->send($this->message);
         }
     }
@@ -144,17 +140,17 @@ abstract class BaseEmailService
      */
     protected function setSubject(string $subject): void
     {
-        $this->message->setSubject($subject);
+        $this->message->subject($subject);
     }
 
     /**
-     * Set the reply to header
+     * Set the reply-to addresses
      *
      * @param array $email
      */
     protected function setReplyTo(array $email): void
     {
-        $this->message->setReplyTo($email);
+        $this->message->replyTo(...$email);
     }
 
     /**
