@@ -39,8 +39,8 @@ class TokenController extends BaseApiController
 
         // authenticate the user for web2
 
-        $clientId     = $request->getParameter('client_id');
-        $clientSecret = $request->getParameter('client_secret');
+        $clientId     = $request->getStringParameter('client_id');
+        $clientSecret = $request->getStringParameter('client_secret');
 
         if (!$this->oauthModel->isClientPermittedPasswordGrant($clientId, $clientSecret)) {
             throw new Exception("This client cannot authenticate using the password grant type", Http::FORBIDDEN);
@@ -52,8 +52,8 @@ class TokenController extends BaseApiController
         }
 
         // generate a temporary access token and then redirect back to the callback
-        $username = $request->getParameter('username');
-        $password = $request->getParameter('password');
+        $username = $request->getStringParameter('username');
+        $password = $request->getStringParameter('password');
         $result   = $this->oauthModel->createAccessTokenFromPassword(
             $clientId,
             $username,
@@ -67,7 +67,7 @@ class TokenController extends BaseApiController
         return ['access_token' => $result['access_token'], 'user_uri' => $result['user_uri']];
     }
 
-    public function listTokensForUser(Request $request, PDO $db)
+    public function listTokensForUser(Request $request, PDO $db): array
     {
         if (!isset($request->user_id)) {
             throw new Exception("You must be logged in", Http::UNAUTHORIZED);
@@ -88,7 +88,7 @@ class TokenController extends BaseApiController
         return $tokens->getOutputView($request, $this->getVerbosity($request));
     }
 
-    public function getToken(Request $request, PDO $db)
+    public function getToken(Request $request, PDO $db): array
     {
         if (!isset($request->user_id)) {
             throw new Exception("You must be logged in", Http::UNAUTHORIZED);
@@ -108,7 +108,7 @@ class TokenController extends BaseApiController
         return $tokens->getOutputView($request, $this->getVerbosity($request));
     }
 
-    public function revokeToken(Request $request, PDO $db)
+    public function revokeToken(Request $request, PDO $db): void
     {
         if (!isset($request->user_id)) {
             throw new Exception("You must be logged in", Http::UNAUTHORIZED);
@@ -143,7 +143,7 @@ class TokenController extends BaseApiController
         );
     }
 
-    private function getTokenMapper(PDO $db, Request $request)
+    private function getTokenMapper(PDO $db, Request $request): TokenMapper
     {
         if (!$this->tokenMapper) {
             $this->tokenMapper = new TokenMapper($db, $request);
@@ -152,7 +152,7 @@ class TokenController extends BaseApiController
         return $this->tokenMapper;
     }
 
-    public function setTokenMapper(TokenMapper $tokenMapper)
+    public function setTokenMapper(TokenMapper $tokenMapper): void
     {
         $this->tokenMapper = $tokenMapper;
     }

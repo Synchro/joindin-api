@@ -93,6 +93,8 @@ final class TalksControllerDeleteTest extends TalkBase
 
     public function testDeleteTalkWhichDoesntExist(): void
     {
+        self::expectNotToPerformAssertions();
+
         $httpRequest = [
             'REQUEST_URI' => 'http://api.dev.joind.in/v2.1/talks/79',
             'REQUEST_METHOD' => 'DELETE'
@@ -123,7 +125,7 @@ final class TalksControllerDeleteTest extends TalkBase
         $view->method('setHeader')->with('Content-Length', 0);
         $view->method('setResponseCode')->with(Http::NO_CONTENT);
 
-        $this->assertNull($talks_controller->deleteTalk($request, $db));
+        $talks_controller->deleteTalk($request, $db);
     }
 
     public function testDeleteTalkWthNoAdmin(): void
@@ -159,6 +161,8 @@ final class TalksControllerDeleteTest extends TalkBase
 
     public function testDeleteTalkWithAdmin(): void
     {
+        self::expectNotToPerformAssertions();
+
         $httpRequest = [
             'REQUEST_URI' => 'http://api.dev.joind.in/v2.1/talks/79',
             'REQUEST_METHOD' => 'DELETE'
@@ -189,6 +193,6 @@ final class TalksControllerDeleteTest extends TalkBase
         $view->method('setHeader')->with('Content-Length', 0);
         $view->method('setResponseCode')->with(Http::NO_CONTENT);
 
-        $this->assertNull($talks_controller->deleteTalk($request, $db));
+        $talks_controller->deleteTalk($request, $db);
     }
 }

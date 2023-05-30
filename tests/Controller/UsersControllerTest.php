@@ -148,7 +148,7 @@ final class UsersControllerTest extends TestCase
             ->willReturn(true);
 
         $usersController->setUserMapper($userMapper);
-        $this->assertNull($usersController->deleteUser($request, $db));
+        $usersController->deleteUser($request, $db);
     }
 
     public function testDeleteTalkCommentsWithoutBeingLoggedInThrowsException(): void
@@ -237,10 +237,11 @@ final class UsersControllerTest extends TestCase
     public function testThatUserDataIsNotDoubleEscapedOnUserCreation(): void
     {
         $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
+        // If we create a user we should be redirected to that user, *not* the current user
         $request->user_id = 1;
         $request->base = 'base';
         $request->path_info = 'path_info';
-        $request->method('getParameter')
+        $request->method('getStringParameter')
             ->withConsecutive(
                 ['username'],
                 ['full_name'],
@@ -259,7 +260,7 @@ final class UsersControllerTest extends TestCase
             );
 
         $view = $this->getMockBuilder(ApiView::class)->disableOriginalConstructor()->getMock();
-        $view->expects($this->once())->method('setHeader')->with('Location', 'basepath_info/1');
+        $view->expects($this->once())->method('setHeader')->with('Location', 'basepath_info/123');
         $view->expects($this->once())->method('setResponseCode')->with(Http::CREATED);
         $request->method('getView')->willReturn($view);
 
@@ -276,7 +277,7 @@ final class UsersControllerTest extends TestCase
             'password' => 'pass"\'stuff',
             'twitter_username' => 'twitter"\'stuff',
             'biography' => 'Bio"\'stuff'
-        ])->willReturn(true);
+        ])->willReturn(123);
 
         $emailService = $this->getMockBuilder(UserRegistrationEmailService::class)->disableOriginalConstructor()->getMock();
         $emailService->method('sendEmail');
@@ -291,8 +292,9 @@ final class UsersControllerTest extends TestCase
     public function testThatUserDataIsNotDoubleEscapedOnUserEdit(): void
     {
         $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
+        $request->method('getAccessToken')->willReturn('foo');
         $request->method('getUserId')->willReturn(1);
-        $request->method('getParameter')->withConsecutive(
+        $request->method('getStringParameter')->withConsecutive(
             ['password'],
             ['full_name'],
             ['email'],
@@ -463,7 +465,7 @@ final class UsersControllerTest extends TestCase
 
     /**
      * Ensures that if the setTrusted method is called by an admin,
-     * and the update succeeds, a view is created and null is returned
+     * and the update succeeds, a view is created
      *
      * @return void
      */
@@ -505,6 +507,6 @@ final class UsersControllerTest extends TestCase
             ->willReturn(true);
 
         $usersController->setUserMapper($userMapper);
-        $this->assertNull($usersController->setTrusted($request, $db));
+        $usersController->setTrusted($request, $db);
     }
 }

@@ -11,9 +11,9 @@ use Joindin\Api\Request;
 class ClientModelCollection extends BaseModelCollection
 {
     /** @var array|ClientModel[] */
-    protected $list;
+    protected array $list;
 
-    protected $total;
+    protected int $total;
 
     /**
      * Take arrays of data and create a collection of models; store metadata
@@ -64,10 +64,8 @@ class ClientModelCollection extends BaseModelCollection
 
     /**
      * Return the list of talks (internal representation)
-     *
-     * @return array
      */
-    public function getClients()
+    public function getClients(): array
     {
         return $this->list;
     }

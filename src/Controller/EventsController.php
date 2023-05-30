@@ -23,17 +23,11 @@ use Teapot\StatusCode\Http;
 
 class EventsController extends BaseApiController
 {
-    /**
-     * @var EventMapper
-     */
-    private $event_mapper;
+    private EventMapper $event_mapper;
 
-    /**
-     * @var PendingTalkClaimMapper
-     */
-    private $pending_talk_claim_mapper;
+    private PendingTalkClaimMapper $pending_talk_claim_mapper;
 
-    public function getAction(Request $request, PDO $db)
+    public function getAction(Request $request, PDO $db): array|false
     {
         $event_id = $this->getItemId($request);
 
@@ -189,7 +183,7 @@ class EventsController extends BaseApiController
         return $list;
     }
 
-    public function postAction(Request $request, PDO $db)
+    public function postAction(Request $request, PDO $db): void
     {
         if (!isset($request->user_id)) {
             throw new Exception("You must be logged in to create data", Http::UNAUTHORIZED);
@@ -221,7 +215,7 @@ class EventsController extends BaseApiController
             $errors = [];
 
             $event['name'] = htmlspecialchars(
-                $request->getParameter("name"),
+                $request->getStringParameter("name"),
                 ENT_NOQUOTES
             );
 
@@ -230,7 +224,7 @@ class EventsController extends BaseApiController
             }
 
             $event['description'] = htmlspecialchars(
-                $request->getParameter("description"),
+                $request->getStringParameter("description"),
                 ENT_NOQUOTES
             );
 
@@ -239,7 +233,7 @@ class EventsController extends BaseApiController
             }
 
             $event['location'] = htmlspecialchars(
-                $request->getParameter("location"),
+                $request->getStringParameter("location"),
                 ENT_NOQUOTES
             );
 
@@ -249,8 +243,8 @@ class EventsController extends BaseApiController
 
             $tz = new DateTimeZone('UTC');
 
-            $start_date = strtotime($request->getParameter("start_date"));
-            $end_date   = strtotime($request->getParameter("end_date"));
+            $start_date = strtotime($request->getStringParameter("start_date"));
+            $end_date   = strtotime($request->getStringParameter("end_date"));
 
             if (!$start_date || ! $end_date) {
                 $errors[] = "Both 'start_date' and 'end_date' must be supplied in a recognised format";
@@ -260,11 +254,11 @@ class EventsController extends BaseApiController
                 // if the dates are okay, sort out timezones
 
                 $event['tz_continent'] = htmlspecialchars(
-                    $request->getParameter("tz_continent"),
+                    $request->getStringParameter("tz_continent"),
                     ENT_NOQUOTES
                 );
                 $event['tz_place']     = htmlspecialchars(
-                    $request->getParameter("tz_place"),
+                    $request->getStringParameter("tz_place"),
                     ENT_NOQUOTES
                 );
 
@@ -272,8 +266,8 @@ class EventsController extends BaseApiController
                     // make the timezone, and read in times with respect to that
                     $tz = new DateTimeZone($event['tz_continent'] . '/' . $event['tz_place']);
 
-                    $start_date          = new DateTime($request->getParameter("start_date"), $tz);
-                    $end_date            = new DateTime($request->getParameter("end_date"), $tz);
+                    $start_date          = new DateTime($request->getStringParameter("start_date"), $tz);
+                    $end_date            = new DateTime($request->getStringParameter("end_date"), $tz);
                     $event['start_date'] = $start_date->format('U');
                     $event['end_date']   = $end_date->format('U');
                 } catch (Exception $e) {
@@ -296,16 +290,16 @@ class EventsController extends BaseApiController
                 if ($cfp_url) {
                     $event['cfp_url'] = $cfp_url;
                 }
-                $cfp_start_date = strtotime($request->getParameter("cfp_start_date"));
+                $cfp_start_date = strtotime($request->getStringParameter("cfp_start_date"));
 
                 if ($cfp_start_date) {
-                    $cfp_start_date          = new DateTime($request->getParameter("cfp_start_date"), $tz);
+                    $cfp_start_date          = new DateTime($request->getStringParameter("cfp_start_date"), $tz);
                     $event['cfp_start_date'] = $cfp_start_date->format('U');
                 }
-                $cfp_end_date = strtotime($request->getParameter("cfp_end_date"));
+                $cfp_end_date = strtotime($request->getStringParameter("cfp_end_date"));
 
                 if ($cfp_end_date) {
-                    $cfp_end_date          = new DateTime($request->getParameter("cfp_end_date"), $tz);
+                    $cfp_end_date          = new DateTime($request->getStringParameter("cfp_end_date"), $tz);
                     $event['cfp_end_date'] = $cfp_end_date->format('U');
                 }
                 $latitude = filter_var(
@@ -423,7 +417,10 @@ class EventsController extends BaseApiController
         }
     }
 
-    public function deleteAction(Request $request, PDO $db)
+    /**
+     * @throws Exception
+     */
+    public function deleteAction(Request $request, PDO $db): void
     {
         if (!isset($request->user_id)) {
             throw new Exception("You must be logged in to delete data", Http::UNAUTHORIZED);
@@ -442,8 +439,6 @@ class EventsController extends BaseApiController
 
                     return;
 
-                    break;
-
                 default:
                     throw new Exception("Operation not supported, sorry", Http::NOT_FOUND);
             }
@@ -452,7 +447,7 @@ class EventsController extends BaseApiController
         }
     }
 
-    public function putAction(Request $request, PDO $db)
+    public function putAction(Request $request, PDO $db): void
     {
         $tz = new DateTimeZone('UTC');
 
@@ -483,7 +478,7 @@ class EventsController extends BaseApiController
             $errors = [];
 
             $event['name'] = htmlspecialchars(
-                $request->getParameter("name"),
+                $request->getStringParameter("name"),
                 ENT_NOQUOTES
             );
 
@@ -492,7 +487,7 @@ class EventsController extends BaseApiController
             }
 
             $event['description'] = htmlspecialchars(
-                $request->getParameter("description"),
+                $request->getStringParameter("description"),
                 ENT_NOQUOTES
             );
 
@@ -501,7 +496,7 @@ class EventsController extends BaseApiController
             }
 
             $event['location'] = htmlspecialchars(
-                $request->getParameter("location"),
+                $request->getStringParameter("location"),
                 ENT_NOQUOTES
             );
 
@@ -509,8 +504,8 @@ class EventsController extends BaseApiController
                 $errors[] = "'location' is a required field (for virtual events, 'online' works)";
             }
 
-            $start_date = strtotime($request->getParameter("start_date"));
-            $end_date   = strtotime($request->getParameter("end_date"));
+            $start_date = strtotime($request->getStringParameter("start_date"));
+            $end_date   = strtotime($request->getStringParameter("end_date"));
 
             if (!$start_date || ! $end_date) {
                 $errors[] = "Both 'start_date' and 'end_date' must be supplied in a recognised format";
@@ -519,19 +514,19 @@ class EventsController extends BaseApiController
             } else {
                 // if the dates are okay, sort out timezones
                 $event['tz_continent'] = htmlspecialchars(
-                    $request->getParameter("tz_continent"),
+                    $request->getStringParameter("tz_continent"),
                     ENT_NOQUOTES
                 );
                 $event['tz_place']     = htmlspecialchars(
-                    $request->getParameter("tz_place"),
+                    $request->getStringParameter("tz_place"),
                     ENT_NOQUOTES
                 );
 
                 try {
                     // make the timezone, and read in times with respect to that
                     $tz                  = new DateTimeZone($event['tz_continent'] . '/' . $event['tz_place']);
-                    $start_date          = new DateTime($request->getParameter("start_date"), $tz);
-                    $end_date            = new DateTime($request->getParameter("end_date"), $tz);
+                    $start_date          = new DateTime($request->getStringParameter("start_date"), $tz);
+                    $end_date            = new DateTime($request->getStringParameter("end_date"), $tz);
                     $event['start_date'] = $start_date->format('U');
                     $event['end_date']   = $end_date->format('U');
                 } catch (Exception $e) {
@@ -561,20 +556,20 @@ class EventsController extends BaseApiController
             }
 
             $event['cfp_start_date'] = null;
-            $cfp_start_date          = $request->getParameter("cfp_start_date", false);
+            $cfp_start_date          = $request->getParameter('cfp_start_date', false);
 
             if (false !== $cfp_start_date && strtotime($cfp_start_date)) {
                 $cfp_start_date          = new DateTime($cfp_start_date, $tz);
                 $event['cfp_start_date'] = $cfp_start_date->format('U');
             }
             $event['cfp_end_date'] = null;
-            $cfp_end_date          = $request->getParameter("cfp_end_date", false);
+            $cfp_end_date          = $request->getParameter('cfp_end_date', false);
 
             if (false !== $cfp_end_date && strtotime($cfp_end_date)) {
                 $cfp_end_date          = new DateTime($cfp_end_date, $tz);
                 $event['cfp_end_date'] = $cfp_end_date->format('U');
             }
-            $latitude = $request->getParameter("latitude", false);
+            $latitude = $request->getParameter('latitude', false);
 
             if (false !== $latitude) {
                 $latitude = filter_var($latitude, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
@@ -583,7 +578,7 @@ class EventsController extends BaseApiController
                     $event['latitude'] = $latitude;
                 }
             }
-            $longitude = $request->getParameter("longitude", false);
+            $longitude = $request->getParameter('longitude', false);
 
             if (false !== $longitude) {
                 $longitude          = filter_var($longitude, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
@@ -616,7 +611,7 @@ class EventsController extends BaseApiController
         }
     }
 
-    public function pendingClaims(Request $request, PDO $db)
+    public function pendingClaims(Request $request, PDO $db): array
     {
         // Check for login
         if (!isset($request->user_id)) {
@@ -651,7 +646,7 @@ class EventsController extends BaseApiController
      * @throws Exception
      * @return void
      */
-    public function createTrack(Request $request, PDO $db)
+    public function createTrack(Request $request, PDO $db): void
     {
         // Check for login
         if (!isset($request->user_id)) {
@@ -683,7 +678,7 @@ class EventsController extends BaseApiController
         // validate fields
         $errors              = [];
         $track['track_name'] = htmlspecialchars(
-            $request->getParameter("track_name"),
+            $request->getStringParameter("track_name"),
             ENT_NOQUOTES
         );
 
@@ -691,7 +686,7 @@ class EventsController extends BaseApiController
             $errors[] = "'track_name' is a required field";
         }
         $track['track_description'] = htmlspecialchars(
-            $request->getParameter("track_description"),
+            $request->getStringParameter("track_description"),
             ENT_NOQUOTES
         );
 
@@ -725,7 +720,7 @@ class EventsController extends BaseApiController
      * @throws Exception
      * @return void
      */
-    public function approveAction(Request $request, PDO $db)
+    public function approveAction(Request $request, PDO $db): void
     {
         if (!isset($request->user_id)) {
             throw new Exception("You must be logged in to create data", Http::UNAUTHORIZED);
@@ -766,7 +761,7 @@ class EventsController extends BaseApiController
      * @throws Exception
      * @return void
      */
-    public function rejectAction(Request $request, PDO $db)
+    public function rejectAction(Request $request, PDO $db): void
     {
         if (!isset($request->user_id)) {
             throw new Exception("You must be logged in to create data", Http::UNAUTHORIZED);
@@ -774,7 +769,7 @@ class EventsController extends BaseApiController
 
         $event_id     = $this->getItemId($request);
         $event_mapper = new EventMapper($db, $request);
-        $reason = htmlspecialchars($request->getParameter('reason'));
+        $reason = htmlspecialchars($request->getStringParameter('reason'));
 
         if (!$event_mapper->thisUserCanApproveEvents()) {
             throw new Exception("You are not allowed to reject this event", Http::FORBIDDEN);
@@ -799,12 +794,12 @@ class EventsController extends BaseApiController
         $view->setResponseCode(Http::NO_CONTENT);
     }
 
-    public function setEventMapper(EventMapper $event_mapper)
+    public function setEventMapper(EventMapper $event_mapper): void
     {
         $this->event_mapper = $event_mapper;
     }
 
-    public function getEventMapper(PDO $db, Request $request)
+    public function getEventMapper(PDO $db, Request $request): EventMapper
     {
         if (!isset($this->event_mapper)) {
             $this->event_mapper = new EventMapper($db, $request);
@@ -813,12 +808,12 @@ class EventsController extends BaseApiController
         return $this->event_mapper;
     }
 
-    public function setPendingTalkClaimMapper(PendingTalkClaimMapper $pending_talk_claim_mapper)
+    public function setPendingTalkClaimMapper(PendingTalkClaimMapper $pending_talk_claim_mapper): void
     {
         $this->pending_talk_claim_mapper = $pending_talk_claim_mapper;
     }
 
-    public function getPendingTalkClaimMapper(PDO $db, Request $request)
+    public function getPendingTalkClaimMapper(PDO $db, Request $request): PendingTalkClaimMapper
     {
         if (!isset($this->pending_talk_claim_mapper)) {
             $this->pending_talk_claim_mapper = new PendingTalkClaimMapper($db, $request);

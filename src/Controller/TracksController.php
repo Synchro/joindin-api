@@ -11,7 +11,7 @@ use Teapot\StatusCode\Http;
 
 class TracksController extends BaseApiController
 {
-    public function getAction(Request $request, PDO $db)
+    public function getAction(Request $request, PDO $db): array
     {
         $track_id = $this->getItemId($request);
 
@@ -33,7 +33,7 @@ class TracksController extends BaseApiController
         return $list;
     }
 
-    public function editTrack(Request $request, PDO $db)
+    public function editTrack(Request $request, PDO $db): void
     {
         // Check for login
         if (!isset($request->user_id)) {
@@ -64,7 +64,7 @@ class TracksController extends BaseApiController
         // validate fields
         $errors              = [];
         $track['track_name'] = htmlspecialchars(
-            $request->getParameter("track_name"),
+            $request->getStringParameter("track_name"),
             ENT_NOQUOTES
         );
 
@@ -72,7 +72,7 @@ class TracksController extends BaseApiController
             $errors[] = "'track_name' is a required field";
         }
         $track['track_description'] = htmlspecialchars(
-            $request->getParameter("track_description", null),
+            $request->getStringParameter("track_description", null),
             ENT_NOQUOTES
         );
 
@@ -93,7 +93,7 @@ class TracksController extends BaseApiController
         $view->setResponseCode(Http::NO_CONTENT);
     }
 
-    public function deleteTrack(Request $request, PDO $db)
+    public function deleteTrack(Request $request, PDO $db): void
     {
         // Check for login
         if (!isset($request->user_id)) {

@@ -10,9 +10,9 @@ use Joindin\Api\Request;
 class PendingTalkClaimModelCollection extends BaseModelCollection
 {
     /** @var array|PendingTalkClaimModel[] */
-    protected $list;
+    protected array $list;
 
-    protected $total;
+    protected int $total;
 
     /**
      * Take arrays of data and create a collection of models; store metadata

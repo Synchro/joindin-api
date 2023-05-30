@@ -18,7 +18,7 @@ class ClientModel extends BaseModel
      *
      * @return array
      */
-    public function getDefaultFields()
+    public function getDefaultFields(): array
     {
         return [
             'consumer_key' => 'consumer_key',
@@ -36,7 +36,7 @@ class ClientModel extends BaseModel
      *
      * @return array
      */
-    public function getVerboseFields()
+    public function getVerboseFields(): array
     {
         $fields = $this->getDefaultFields();
 
@@ -54,7 +54,7 @@ class ClientModel extends BaseModel
      *
      * @return array
      */
-    public function getOutputView(Request $request, bool $verbose = false)
+    public function getOutputView(Request $request, bool $verbose = false): array
     {
         $item = parent::getOutputView($request, $verbose);
 
