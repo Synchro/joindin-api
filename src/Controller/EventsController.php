@@ -29,7 +29,7 @@ class EventsController extends BaseApiController
 
     public function getAction(Request $request, PDO $db): array|false
     {
-        $event_id = $this->getItemId($request);
+        $event_id = $this->getItemId($request, 'Event not found');
 
         // verbosity
         $verbose = $this->getVerbosity($request);
@@ -89,12 +89,12 @@ class EventsController extends BaseApiController
             $mapper           = new EventMapper($db, $request);
             $user_mapper      = new UserMapper($db, $request);
             $isSiteAdmin      = $user_mapper->isSiteAdmin($request->user_id);
-            $activeEventsOnly = $isSiteAdmin ? false : true;
+            $activeEventsOnly = !$isSiteAdmin;
 
             if ($event_id) {
                 $list = $mapper->getEventById($event_id, $verbose, $activeEventsOnly);
 
-                if (count($list['events']) == 0) {
+                if ($list === false || count($list['events']) === 0) {
                     throw new Exception('Event not found', Http::NOT_FOUND);
                 }
             } else {
@@ -102,13 +102,13 @@ class EventsController extends BaseApiController
                 $params = [];
 
                 // collection type filter
-                $filters = ["hot", "upcoming", "past", "cfp", "pending", "all"];
+                $filters = ['hot', 'upcoming', 'past', 'cfp', 'pending', 'all'];
 
-                if (isset($request->parameters['filter']) && in_array($request->parameters['filter'], $filters)) {
+                if (isset($request->parameters['filter']) && in_array($request->parameters['filter'], $filters, true)) {
                     $params["filter"] = $request->parameters['filter'];
 
-                    // for pending events we need a logged in user with the correct permissions
-                    if ($params["filter"] == 'pending') {
+                    // for pending events we need a logged-in user with the correct permissions
+                    if ($params["filter"] === 'pending') {
                         if (!isset($request->user_id)) {
                             throw new Exception("You must be logged in to view pending events", Http::BAD_REQUEST);
                         }
@@ -176,7 +176,13 @@ class EventsController extends BaseApiController
                     }
                 }
 
-                $list = $mapper->getEventList($resultsperpage, $start, $params, $verbose);
+                $list = $mapper->getEventList(
+                    $resultsperpage,
+                    // intentionally pass through null to ensure we get the first upcoming event when applicable
+                    $request->paginationParameters['start'] ?? null,
+                    $params,
+                    $verbose
+                );
             }
         }
 
@@ -194,7 +200,7 @@ class EventsController extends BaseApiController
                 case 'attending':
                     // the body of this request is completely irrelevant
                     // The logged in user *is* attending the event.  Use DELETE to unattend
-                    $event_id     = $this->getItemId($request);
+                    $event_id     = $this->getItemId($request, 'Event not found');
                     $event_mapper = new EventMapper($db, $request);
                     $event_mapper->setUserAttendance($event_id, $request->user_id);
 
@@ -429,7 +435,7 @@ class EventsController extends BaseApiController
         if (isset($request->url_elements[4])) {
             switch ($request->url_elements[4]) {
                 case 'attending':
-                    $event_id     = $this->getItemId($request);
+                    $event_id     = $this->getItemId($request, 'Event not found');
                     $event_mapper = new EventMapper($db, $request);
                     $event_mapper->setUserNonAttendance($event_id, $request->user_id);
 
@@ -455,7 +461,7 @@ class EventsController extends BaseApiController
             throw new Exception('You must be logged in to edit data', Http::UNAUTHORIZED);
         }
 
-        $event_id = $this->getItemId($request);
+        $event_id = $this->getItemId($request, 'Event not found');
 
         if (!isset($request->url_elements[4])) {
             // Edit an Event
@@ -618,7 +624,7 @@ class EventsController extends BaseApiController
             throw new Exception("You must be logged in to view pending claims", Http::UNAUTHORIZED);
         }
 
-        $event_id     = $this->getItemId($request);
+        $event_id     = $this->getItemId($request, 'Event not found');
         $event_mapper = $this->getEventMapper($db, $request);
 
         $pending_talk_claim_mapper = $this->getPendingTalkClaimMapper($db, $request);
@@ -654,7 +660,7 @@ class EventsController extends BaseApiController
         }
 
         $track             = [];
-        $event_id          = $this->getItemId($request);
+        $event_id          = $this->getItemId($request, 'Event not found');
         $track['event_id'] = $event_id;
 
         if (empty($track['event_id'])) {
@@ -726,7 +732,7 @@ class EventsController extends BaseApiController
             throw new Exception("You must be logged in to create data", Http::UNAUTHORIZED);
         }
 
-        $event_id     = $this->getItemId($request);
+        $event_id     = $this->getItemId($request, 'Event not found');
         $event_mapper = new EventMapper($db, $request);
 
         if (!$event_mapper->thisUserCanApproveEvents()) {
@@ -767,7 +773,7 @@ class EventsController extends BaseApiController
             throw new Exception("You must be logged in to create data", Http::UNAUTHORIZED);
         }
 
-        $event_id     = $this->getItemId($request);
+        $event_id     = $this->getItemId($request, 'Event not found');
         $event_mapper = new EventMapper($db, $request);
         $reason = htmlspecialchars($request->getStringParameter('reason'));
 

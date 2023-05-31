@@ -10,7 +10,6 @@ use Joindin\Api\Service\CommentReportedEmailService;
 use PDO;
 use Joindin\Api\Request;
 use Teapot\StatusCode\Http;
-use UnexpectedValueException;
 
 class TalkCommentsController extends BaseApiController
     // @codingStandardsIgnoreEnd
@@ -22,7 +21,7 @@ class TalkCommentsController extends BaseApiController
 
     public function getComments(Request $request, PDO $db): false|array
     {
-        $commentId = $this->getItemId($request);
+        $commentId = $this->getItemId($request, 'Comment not found');
 
         // verbosity
         $verbose = $this->getVerbosity($request);
@@ -44,11 +43,7 @@ class TalkCommentsController extends BaseApiController
 
     public function getReported(Request $request, PDO $db): array
     {
-        $eventId = $this->getItemId($request);
-
-        if (empty($eventId)) {
-            throw new UnexpectedValueException("Event not found", Http::NOT_FOUND);
-        }
+        $eventId = $this->getItemId($request, 'Event not found');
 
         $eventMapper   = new EventMapper($db, $request);
         $commentMapper = $this->getCommentMapper($request, $db);
@@ -75,7 +70,7 @@ class TalkCommentsController extends BaseApiController
 
         $commentMapper = $this->getCommentMapper($request, $db);
 
-        $commentId   = $this->getItemId($request);
+        $commentId   = $this->getItemId($request, 'Comment not found');
         $commentInfo = $commentMapper->getCommentInfo($commentId);
 
         if (false === $commentInfo) {
@@ -127,7 +122,7 @@ class TalkCommentsController extends BaseApiController
 
         $commentMapper = $this->getCommentMapper($request, $db);
 
-        $commentId   = $this->getItemId($request);
+        $commentId   = $this->getItemId($request, 'Comment not found');
         $commentInfo = $commentMapper->getCommentInfo($commentId);
 
         if (false === $commentInfo) {
@@ -170,7 +165,7 @@ class TalkCommentsController extends BaseApiController
             throw new Exception('The field "comment" is required', Http::BAD_REQUEST);
         }
 
-        $commentId     = $this->getItemId($request);
+        $commentId     = $this->getItemId($request, 'Comment not found');
         $commentMapper = $this->getCommentMapper($request, $db);
         $comment       = $commentMapper->getRawComment($commentId);
 
